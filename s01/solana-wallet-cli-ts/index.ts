@@ -4,6 +4,9 @@ import {
   Connection,
   PublicKey,
   LAMPORTS_PER_SOL,
+  Transaction,
+  SystemProgram,
+  sendAndConfirmTransaction,
 } from "@solana/web3.js";
 
 import "dotenv/config";
@@ -68,6 +71,44 @@ program
     }
   });
 
-program.command()
+program
+  .command("send <amount> <from> <to>")
+  .action(async (amount: string, fromKey: string, to: string) => {
+    try {
+      const connection = new Connection(rpcUrl, "confirmed");
+      const fromKeypair = Keypair.fromSecretKey(
+        Uint8Array.from(JSON.parse(fromKey)),
+      );
+      const toPubkey = new PublicKey(to);
+      const amountSol = parseFloat(amount);
+      const amountLamports = Math.round(amountSol * LAMPORTS_PER_SOL);
+
+      console.log(
+        `Sending ${amount} SOL from ${fromKeypair.publicKey.toBase58()} to ${to}...`,
+      );
+
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: fromKeypair.publicKey,
+          toPubkey: toPubkey,
+          lamports: amountLamports,
+        }),
+      );
+
+      const signature = await sendAndConfirmTransaction(
+        connection,
+        transaction,
+        [fromKeypair],
+      );
+
+      console.log(`Transaction successful!`);
+      console.log(`Transaction signature: ${signature}`);
+
+      const toBalance = await connection.getBalance(toPubkey);
+      console.log(`New balance for ${to}: ${toBalance / LAMPORTS_PER_SOL} SOL`);
+    } catch (error) {
+      console.error("Error during send:", (error as Error).message);
+    }
+  });
 
 program.parse(process.argv);
