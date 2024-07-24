@@ -39,7 +39,8 @@ program
   .action(async (amount: string, address: string) => {
     try {
       const publicKey = new PublicKey(address);
-      const amountLamports = parseFloat(amount) * LAMPORTS_PER_SOL;
+      const amountSol = parseFloat(amount);
+      const amountLamports = Math.round(amountSol * LAMPORTS_PER_SOL);
 
       console.log(`Requesting airdrop of ${amount} SOL to ${address}...`);
 
@@ -66,5 +67,7 @@ program
       console.error("Error during airdrop:", (error as Error).message);
     }
   });
+
+program.command()
 
 program.parse(process.argv);
