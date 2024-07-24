@@ -4,7 +4,9 @@
   "type": "module",
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/node": "^20.14.12"
+    "@types/dotenv": "^8.2.0",
+    "@types/node": "^20.14.12",
+    "dotenv": "^16.4.5"
   },
   "peerDependencies": {
     "typescript": "^5.5.4"
