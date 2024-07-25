@@ -73,6 +73,7 @@ program
 
 program
   .command("send <amount> <from> <to>")
+  .description("Send SOL tokens from one address to another")
   .action(async (amount: string, fromKey: string, to: string) => {
     try {
       const connection = new Connection(rpcUrl, "confirmed");
