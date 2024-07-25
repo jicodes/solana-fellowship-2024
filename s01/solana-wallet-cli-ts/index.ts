@@ -37,18 +37,18 @@ program
   });
 
 program
-  .command("airdrop <amount> <pubKey>")
+  .command("airdrop <amount> <recipient_address>")
   .description("Request an airdrop of SOL tokens to the given address")
   .action(async (amount: string, address: string) => {
     try {
-      const publicKey = new PublicKey(address);
+      const recipient = new PublicKey(address);
       const amountSol = parseFloat(amount);
       const amountLamports = Math.round(amountSol * LAMPORTS_PER_SOL);
 
       console.log(`Requesting airdrop of ${amount} SOL to ${address}...`);
 
       const signature = await connection.requestAirdrop(
-        publicKey,
+        recipient,
         amountLamports,
       );
 
@@ -64,7 +64,7 @@ program
       console.log(`Airdrop of ${amount} SOL to ${address} successful!`);
       console.log(`Transaction signature: ${signature}`);
 
-      const balance = await connection.getBalance(publicKey);
+      const balance = await connection.getBalance(recipient);
       console.log(`New balance: ${balance / LAMPORTS_PER_SOL} SOL`);
     } catch (error) {
       console.error("Error during airdrop:", (error as Error).message);
