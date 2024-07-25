@@ -1,4 +1,10 @@
-# solana-wallet-cli-ts
+
+# Solana Summer Fellowship Session 01: exercise
+
+## Description
+A simple CLI to interact with a Solana wallet written in TypeScript.
+
+## Usage
 
 To install dependencies:
 
@@ -12,4 +18,11 @@ To run:
 bun run index.ts
 ```
 
-This project was created using `bun init` in bun v1.1.17. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+## Development
+
+Add dependencies
+```bash
+bun add @solana/web3.js typescript commander 
+
+bun add --dev @types/node dotenv @types/dotenv
+```
