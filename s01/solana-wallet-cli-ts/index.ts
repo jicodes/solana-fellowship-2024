@@ -1,8 +1,9 @@
 import { Command } from "commander";
 import {
   Keypair,
-  Connection,
   PublicKey,
+  Connection,
+  clusterApiUrl,
   LAMPORTS_PER_SOL,
   Transaction,
   SystemProgram,
@@ -11,10 +12,8 @@ import {
 
 import "dotenv/config";
 
-const rpcUrl = process.env.DEVNET_RPC_URL;
-if (typeof rpcUrl !== "string") {
-  throw new Error("DEVNET_RPC_URL environment variable is not set.");
-}
+const rpcUrl = process.env.DEVNET_RPC_URL || clusterApiUrl("devnet");
+
 const connection = new Connection(rpcUrl, "confirmed");
 
 const program = new Command();
