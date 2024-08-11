@@ -1,4 +1,3 @@
-import { Command } from "commander";
 import {
   Keypair,
   PublicKey,
@@ -11,10 +10,97 @@ import {
 } from "@solana/web3.js";
 
 import "dotenv/config";
+import * as fs from "fs";
+import { Command } from "commander";
 
-const rpcUrl = process.env.DEVNET_RPC_URL || clusterApiUrl("devnet");
+// Configurable Solana network endpoint
+const rpcUrl = process.env.SOLANA_RPC_URL || clusterApiUrl("devnet");
 
-const connection = new Connection(rpcUrl, "confirmed");
+class SolanaWallet {
+  private connection: Connection;
+
+  constructor() {
+    this.connection = new Connection(rpcUrl, "confirmed");
+  }
+
+  generateKeypair(): Keypair {
+    const keypair = Keypair.generate();
+    return keypair;
+  }
+
+  saveKeypair(filepath: string, keypair: Keypair): void {
+    const secretKey = JSON.stringify(Array.from(keypair.secretKey));
+    fs.writeFileSync(filepath, secretKey);
+  }
+
+  async requestAirdrop(
+    recipient: PublicKey,
+    amountSol: number,
+  ): Promise<string> {
+    const amountLamports = Math.round(amountSol * LAMPORTS_PER_SOL);
+
+    console.log(
+      `Requesting airdrop of ${amountSol} SOL to ${recipient.toBase58()}...`,
+    );
+
+    const signature = await this.connection.requestAirdrop(
+      recipient,
+      amountLamports,
+    );
+
+    console.log("Airdrop requested. Awaiting confirmation...");
+
+    const latestBlockHash = await this.connection.getLatestBlockhash();
+    await this.connection.confirmTransaction({
+      blockhash: latestBlockHash.blockhash,
+      lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+      signature: signature,
+    });
+
+    console.log(
+      `Airdrop of ${amountSol} SOL to ${recipient.toBase58()} successful!`,
+    );
+    console.log(`Transaction signature: ${signature}`);
+
+    return signature;
+  }
+
+  async sendTransaction(
+    fromKeypair: Keypair,
+    toPubkey: PublicKey,
+    amountSol: number,
+  ): Promise<string> {
+    const amountLamports = Math.round(amountSol * LAMPORTS_PER_SOL);
+
+    console.log(
+      `Sending ${amountSol} SOL from ${fromKeypair.publicKey.toBase58()} to ${toPubkey.toBase58()}...`,
+    );
+
+    const transaction = new Transaction().add(
+      SystemProgram.transfer({
+        fromPubkey: fromKeypair.publicKey,
+        toPubkey: toPubkey,
+        lamports: amountLamports,
+      }),
+    );
+
+    const signature = await sendAndConfirmTransaction(
+      this.connection,
+      transaction,
+      [fromKeypair],
+    );
+
+    console.log(`Transaction successful!`);
+    console.log(`Transaction signature: ${signature}`);
+
+    return signature;
+  }
+
+  async getBalance(pubkey: PublicKey): Promise<number> {
+    const balance = await this.connection.getBalance(pubkey);
+    return balance / LAMPORTS_PER_SOL;
+  }
+}
 
 const program = new Command();
 
@@ -24,7 +110,8 @@ program
   .command("keygen")
   .description("Generate a new Solana keypair")
   .action(() => {
-    const keypair = Keypair.generate();
+    const wallet = new SolanaWallet();
+    const keypair = wallet.generateKeypair();
 
     const publicKey = keypair.publicKey.toBase58();
     const secretKey = JSON.stringify(Array.from(keypair.secretKey));
@@ -33,6 +120,10 @@ program
     console.log(`Public Key: ${publicKey}`);
     console.log(`Secret Key: ${secretKey}`);
     console.log("Please save these keys securely.");
+
+    const filepath = `./${publicKey}.json`;
+    wallet.saveKeypair(filepath, keypair);
+    console.log(`Keypair saved to ${filepath}`);
   });
 
 program
@@ -40,31 +131,14 @@ program
   .description("Request an airdrop of SOL tokens to the given address")
   .action(async (amount: string, address: string) => {
     try {
+      const wallet = new SolanaWallet();
       const recipient = new PublicKey(address);
       const amountSol = parseFloat(amount);
-      const amountLamports = Math.round(amountSol * LAMPORTS_PER_SOL);
 
-      console.log(`Requesting airdrop of ${amount} SOL to ${address}...`);
+      const signature = await wallet.requestAirdrop(recipient, amountSol);
 
-      const signature = await connection.requestAirdrop(
-        recipient,
-        amountLamports,
-      );
-
-      console.log("Airdrop requested. Awaiting confirmation...");
-
-      const latestBlockHash = await connection.getLatestBlockhash();
-      await connection.confirmTransaction({
-        blockhash: latestBlockHash.blockhash,
-        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
-        signature: signature,
-      });
-
-      console.log(`Airdrop of ${amount} SOL to ${address} successful!`);
-      console.log(`Transaction signature: ${signature}`);
-
-      const balance = await connection.getBalance(recipient);
-      console.log(`New balance: ${balance / LAMPORTS_PER_SOL} SOL`);
+      const balance = await wallet.getBalance(recipient);
+      console.log(`New balance for${recipient} is: ${balance} SOL`);
     } catch (error) {
       console.error("Error during airdrop:", (error as Error).message);
     }
@@ -75,37 +149,21 @@ program
   .description("Send SOL tokens from one address to another")
   .action(async (amount: string, fromKey: string, to: string) => {
     try {
-      const connection = new Connection(rpcUrl, "confirmed");
+      const wallet = new SolanaWallet();
       const fromKeypair = Keypair.fromSecretKey(
         Uint8Array.from(JSON.parse(fromKey)),
       );
       const toPubkey = new PublicKey(to);
       const amountSol = parseFloat(amount);
-      const amountLamports = Math.round(amountSol * LAMPORTS_PER_SOL);
 
-      console.log(
-        `Sending ${amount} SOL from ${fromKeypair.publicKey.toBase58()} to ${to}...`,
+      const signature = await wallet.sendTransaction(
+        fromKeypair,
+        toPubkey,
+        amountSol,
       );
 
-      const transaction = new Transaction().add(
-        SystemProgram.transfer({
-          fromPubkey: fromKeypair.publicKey,
-          toPubkey: toPubkey,
-          lamports: amountLamports,
-        }),
-      );
-
-      const signature = await sendAndConfirmTransaction(
-        connection,
-        transaction,
-        [fromKeypair],
-      );
-
-      console.log(`Transaction successful!`);
-      console.log(`Transaction signature: ${signature}`);
-
-      const toBalance = await connection.getBalance(toPubkey);
-      console.log(`New balance for ${to}: ${toBalance / LAMPORTS_PER_SOL} SOL`);
+      const toBalance = await wallet.getBalance(toPubkey);
+      console.log(`New balance for ${toPubkey.toBase58()}: ${toBalance} SOL`);
     } catch (error) {
       console.error("Error during send:", (error as Error).message);
     }
