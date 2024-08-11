@@ -15,14 +15,14 @@ bun install
 To run:
 
 ```bash
-bun run index.ts
+bun run index.ts <command> <options>
 ```
 
 ## Development
 
 Add dependencies
 ```bash
-bun add @solana/web3.js typescript commander 
+bun add @solana/web3.js typescript commander @solana-developers/helpers
 
 bun add --dev @types/node dotenv @types/dotenv
 ```
