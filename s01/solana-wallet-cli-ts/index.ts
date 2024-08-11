@@ -9,6 +9,8 @@ import {
   sendAndConfirmTransaction,
 } from "@solana/web3.js";
 
+import { getExplorerLink } from "@solana-developers/helpers";
+
 import "dotenv/config";
 import * as fs from "fs";
 import { Command } from "commander";
@@ -60,7 +62,6 @@ class SolanaWallet {
     console.log(
       `Airdrop of ${amountSol} SOL to ${recipient.toBase58()} successful!`,
     );
-    console.log(`Transaction signature: ${signature}`);
 
     return signature;
   }
@@ -91,7 +92,6 @@ class SolanaWallet {
     );
 
     console.log(`Transaction successful!`);
-    console.log(`Transaction signature: ${signature}`);
 
     return signature;
   }
@@ -136,9 +136,11 @@ program
       const amountSol = parseFloat(amount);
 
       const signature = await wallet.requestAirdrop(recipient, amountSol);
+      const explorerLink = getExplorerLink("tx", signature, "devnet");
+      console.log(`View the tx at solana explorer: ${explorerLink}`);
 
       const balance = await wallet.getBalance(recipient);
-      console.log(`New balance for${recipient} is: ${balance} SOL`);
+      console.log(`New balance for ${recipient} is: ${balance} SOL`);
     } catch (error) {
       console.error("Error during airdrop:", (error as Error).message);
     }
@@ -161,6 +163,8 @@ program
         toPubkey,
         amountSol,
       );
+      const explorerLink = getExplorerLink("tx", signature, "devnet");
+      console.log(`View the tx at solana explorer: ${explorerLink}`);
 
       const toBalance = await wallet.getBalance(toPubkey);
       console.log(`New balance for ${toPubkey.toBase58()}: ${toBalance} SOL`);

@@ -12,6 +12,7 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
+    "@solana-developers/helpers": "^2.4.0",
     "@solana/web3.js": "^1.95.1",
     "commander": "^12.1.0"
   }
