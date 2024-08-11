@@ -3,6 +3,7 @@
 
 ## Description
 A simple CLI to interact with a Solana wallet written in TypeScript.
+It can create a new keypair, request an airdrop, and send SOL to another public key.
 
 ## Usage
 
