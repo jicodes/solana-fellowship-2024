@@ -26,13 +26,13 @@ mod asset_manager_vault {
         }
 
         // Invoke the transfer instruction on the token program
-        let cpi_accounts = Transfer {
+        let cpi_ix = Transfer {
             from: ctx.accounts.user_token_account.to_account_info(),
             to: ctx.accounts.vault_token_account.to_account_info(),
             authority: ctx.accounts.user.to_account_info(),
         };
         let cpi_program = ctx.accounts.token_program.to_account_info();
-        let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
+        let cpi_ctx = CpiContext::new(cpi_program, cpi_ix);
         token::transfer(cpi_ctx, amount)?;
 
         // Update or create the user's deposit PDA account
