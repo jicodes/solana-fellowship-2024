@@ -6,11 +6,12 @@ describe("asset_manager_vault", () => {
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
 
-  const program = anchor.workspace.AssetManagerVault as Program<AssetManagerVault>;
+  const program = anchor.workspace
+    .AssetManagerVault as Program<AssetManagerVault>;
 
   it("Is initialized!", async () => {
     // Add your test here.
-    const tx = await program.methods.initialize().rpc();
+    const tx = await program.methods.initializeVault().rpc();
     console.log("Your transaction signature", tx);
   });
 });
