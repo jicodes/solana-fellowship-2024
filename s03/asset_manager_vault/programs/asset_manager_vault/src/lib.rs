@@ -45,14 +45,14 @@ pub mod asset_manager_vault {
             .find(|(pk, _)| *pk == user_key)
         {
             // User already has a deposit, so increase the amount
-            *user_deposit += amount;
+            *user_deposit = user_deposit.checked_add(amount).ok_or(ErrorCode::Overflow)?;
         } else {
             // User doesn't have a deposit yet, so add a new entry
             vault.user_deposits.push((user_key, amount));
         }
 
         // Update total deposits in vault
-        vault.total_deposits += amount;
+        vault.total_deposits = vault.total_deposits.checked_add(amount).ok_or(ErrorCode::Overflow)?
 
         Ok(())
     }
@@ -69,20 +69,17 @@ pub mod asset_manager_vault {
             .find(|(pk, _)| *pk == user_key)
             .ok_or(ErrorCode::InsufficientFunds)?;
 
-        // Check if the user has enough deposit
-        if user_deposit.1 < amount {
-            return Err(ErrorCode::InsufficientFunds.into());
-        }
+        // Decrease user's deposit while  
+        // checking if the user has enough deposit using checked_sub
+        user_deposit.1 = user_deposit.1.checked_sub(amount).ok_or(ErrorCode::InsufficientFunds)?;
 
-        // Decrease user's deposit
-        user_deposit.1 -= amount;
         if user_deposit.1 == 0 {
             // Remove the entry if the deposit is zero
             vault.user_deposits.retain(|(pk, _)| pk != &user_key);
         }
 
-        // Decrease total deposits in vault
-        vault.total_deposits -= amount;
+        // Decrease total deposits in vault using checked_sub
+        vault.total_deposits = vault.total_deposits.checked_sub(amount).ok_or(ErrorCode::Overflow)?;
 
         // Store the necessary information for the CPI before mutating the vault
         // let vault_key = *vault.to_account_info().key;
@@ -165,4 +162,6 @@ pub enum ErrorCode {
     InvalidMint,
     #[msg("Insufficient funds.")]
     InsufficientFunds,
+    #[msg("Overflow occurred.")]
+    Overflow,
 }
