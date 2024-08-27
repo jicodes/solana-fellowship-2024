@@ -14,32 +14,43 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Trash2 } from "lucide-react";
+import { uuidv7 } from "uuidv7";
+import { z } from "zod";
 
+const ProductSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, "Product name is required"),
+  price: z.number().positive("Price must be a positive number"),
+});
 
-type Product = {
-  id: number;
-  name: string;
-  price: number;
-};
+type Product = z.infer<typeof ProductSchema>;
 
 export default function Home() {
   const router = useRouter();
   const [cart, setCart] = useState<Product[]>([]);
   const [newProduct, setNewProduct] = useState({ name: "", price: "" });
+  const [error, setError] = useState<string | null>(null);
 
   const addToCart = () => {
-    if (newProduct.name && newProduct.price) {
-      const product: Product = {
+    try {
+      const product: Product = ProductSchema.parse({
+        id: uuidv7(),
         name: newProduct.name,
         price: parseFloat(newProduct.price),
-        id: Date.now(),
-      };
+      });
       setCart([...cart, product]);
       setNewProduct({ name: "", price: "" });
+      setError(null);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        setError(err.errors[0].message);
+      } else {
+        setError("An unexpected error occurred");
+      }
     }
   };
 
-  const removeFromCart = (id: number) => {
+  const removeFromCart = (id: string) => {
     setCart(cart.filter((item) => item.id !== id));
   };
 
@@ -77,6 +88,7 @@ export default function Home() {
                   setNewProduct({ ...newProduct, price: e.target.value })
                 }
               />
+              {error && <p className="text-red-500">{error}</p>}
               <Button onClick={addToCart}>Add to Cart</Button>
             </div>
           </CardContent>
