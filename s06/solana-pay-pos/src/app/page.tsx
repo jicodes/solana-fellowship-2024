@@ -16,11 +16,12 @@ import {
 import { Trash2 } from "lucide-react";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
+import { BigNumber } from "bignumber.js";
 
 const ProductSchema = z.object({
   id: z.string(),
   name: z.string().min(1, "Product name is required"),
-  price: z.number().positive("Price must be a positive number"),
+  price: z.instanceof(BigNumber).refine((val) => val.isGreaterThan(0), "Price must be a positive number"),
 });
 
 type Product = z.infer<typeof ProductSchema>;
@@ -30,13 +31,14 @@ export default function Home() {
   const [cart, setCart] = useState<Product[]>([]);
   const [newProduct, setNewProduct] = useState({ name: "", price: "" });
   const [error, setError] = useState<string | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const addToCart = () => {
     try {
       const product: Product = ProductSchema.parse({
         id: uuidv7(),
         name: newProduct.name,
-        price: parseFloat(newProduct.price),
+        price: new BigNumber(newProduct.price),
       });
       setCart([...cart, product]);
       setNewProduct({ name: "", price: "" });
@@ -55,11 +57,16 @@ export default function Home() {
   };
 
   const getTotalPrice = () => {
-    return cart.reduce((total, item) => total + item.price, 0).toFixed(2);
+    return cart.reduce((total, item) => total.plus(item.price), new BigNumber(0)).toFixed(4);
   };
 
   const handleCheckout = () => {
-    router.push("/checkout");
+    const totalAmount = getTotalPrice();
+    if (new BigNumber(totalAmount).isGreaterThan(0)) {
+      router.push(`/checkout?amount=${totalAmount}`);
+    } else {
+      setCheckoutError("Cart is empty. Please add items before checkout.");
+    }
   };
 
   return (
@@ -108,10 +115,10 @@ export default function Home() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {cart.map((item) => (
+                {cart.map((item: Product) => (
                   <TableRow key={item.id}>
                     <TableCell>{item.name}</TableCell>
-                    <TableCell>{item.price}</TableCell>
+                    <TableCell>{item.price.toFixed(9)}</TableCell>
                     <TableCell>
                       <Button
                         variant="destructive"
@@ -130,6 +137,7 @@ export default function Home() {
               <Button className="mt-2" onClick={handleCheckout}>
                 Checkout
               </Button>
+              {checkoutError && <p className="text-red-500">{checkoutError}</p>}
             </div>
           </CardContent>
         </Card>
