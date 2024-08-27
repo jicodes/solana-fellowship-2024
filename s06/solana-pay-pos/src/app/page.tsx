@@ -118,7 +118,7 @@ export default function Home() {
                 {cart.map((item: Product) => (
                   <TableRow key={item.id}>
                     <TableCell>{item.name}</TableCell>
-                    <TableCell>{item.price.toFixed(9)}</TableCell>
+                    <TableCell>{item.price.toFixed(4)}</TableCell>
                     <TableCell>
                       <Button
                         variant="destructive"

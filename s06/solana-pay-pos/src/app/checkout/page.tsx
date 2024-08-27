@@ -1,16 +1,56 @@
 "use client";
 
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 
+import { createQR, encodeURL } from "@solana/pay";
+import { Keypair, PublicKey, Connection, clusterApiUrl } from "@solana/web3.js";
+import BigNumber from "bignumber.js";
+
 export default function Checkout() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const totalAmount = parseFloat(searchParams.get("amount") || "0");
+  const totalAmount = new BigNumber(searchParams.get("amount") || "0");
+  const qrRef = useRef<HTMLDivElement>(null);
+  const [qrGenerated, setQrGenerated] = useState(false);
+
+
+  if (qrRef.current && !qrGenerated) {
+    const recipient = new PublicKey("dw1MtDSqudTcVzDPddQwTAFRsXt8gjw8CqEzoBDTSVM"); 
+    const reference = new Keypair().publicKey;
+    const label = "Solana POS Purchase";
+    const message = "Thanks for your purchase!";
+    
+    let memoCounter = 100000;
+    const generateMemo = (): string => {
+      memoCounter += 1;
+      return `#${memoCounter}`;
+    }
+
+    const memo = generateMemo();
+
+    const url = encodeURL({
+      recipient,
+      reference,
+      amount: totalAmount,
+      label,
+      message,
+      memo,
+    });
+
+    const qr = createQR(url, 320, "white","black");
+    if (qrRef.current) {
+      qrRef.current.innerHTML = "";
+      qr.append(qrRef.current);
+    }
+    setQrGenerated(true);
+
+    // Set up transaction confirmation polling
+  }
 
   return (
     <div className="container mx-auto p-4 max-w-md">
@@ -29,14 +69,7 @@ export default function Checkout() {
           </div>
           <div className="text-xl mb-6">SOL</div>
 
-          <div className="w-64 h-64 relative mb-6">
-            <Image
-              src="/placeholder.svg"
-              alt="Solana Pay QR Code"
-              layout="fill"
-              objectFit="contain"
-            />
-          </div>
+          <div ref={qrRef} className="relative mb-6"></div>
 
           <p className="text-center mb-1">
             Scan this code with your Solana Pay wallet
