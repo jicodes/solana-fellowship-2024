@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 import Image from "next/image";
 
 import { createQR, encodeURL } from "@solana/pay";
@@ -18,6 +18,7 @@ export default function Checkout() {
   const qrRef = useRef<HTMLDivElement>(null);
   const [qrGenerated, setQrGenerated] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState("pending");
+  const [signature, setSignature] = useState<string | null>(null);
 
   const recipient = new PublicKey(
     "dw1MtDSqudTcVzDPddQwTAFRsXt8gjw8CqEzoBDTSVM",
@@ -51,6 +52,7 @@ export default function Checkout() {
         const verificationResult = await verifyPayment();
         setPaymentStatus(verificationResult.status);
         if (verificationResult.status === "success") {
+          setSignature(verificationResult.signature);
           clearInterval(pollInterval);
         } else if (verificationResult.status === "error") {
           clearInterval(pollInterval);
@@ -78,6 +80,10 @@ export default function Checkout() {
       console.error("Error verifying payment:", error);
       return { status: "error", message: "Payment verification failed" };
     }
+  };
+
+  const getExplorerLink = (signature: string) => {
+    return `https://explorer.solana.com/tx/${signature}?cluster=devnet`;
   };
 
   return (
@@ -110,8 +116,19 @@ export default function Checkout() {
           )}
 
           {paymentStatus === "success" && (
-            <div className="text-green-500 font-bold text-xl mb-6">
-              Payment Finished!
+            <div className="text-center mb-6">
+              <div className="text-green-500 font-bold text-xl mb-2">
+                Payment Verified Successfully!
+              </div>
+              <a
+                href={getExplorerLink(signature!)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:text-blue-700 flex items-center justify-center"
+              >
+                View on Solana Explorer
+                <ExternalLink className="ml-1 h-4 w-4" />
+              </a>
             </div>
           )}
 

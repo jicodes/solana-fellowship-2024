@@ -49,6 +49,7 @@ export async function POST(request: Request) {
         return NextResponse.json({
           status: "success",
           message: "Payment verified successfully",
+          signature: signatureInfo.signature,
         });
       } else {
         return NextResponse.json({
@@ -73,7 +74,7 @@ export async function POST(request: Request) {
     }
     return NextResponse.json(
       { status: "error", message: "Error processing request" },
-      { status: 400 },
+      { status: 500 },
     );
   }
 }
