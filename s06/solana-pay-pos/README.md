@@ -15,7 +15,5 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 ## Check out the demo video below:
+https://github.com/user-attachments/assets/0601bc8e-8847-49a2-87f2-de678b85d806
 
-<video width="600" controls>
-  <source src="./docs/demo.mp4" type="video/mp4">
-</video>
