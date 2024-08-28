@@ -118,7 +118,7 @@ export default function Checkout() {
           {paymentStatus === "success" && (
             <div className="text-center mb-6">
               <div className="text-green-500 font-bold text-xl mb-2">
-                Payment Verified Successfully!
+                Payment Successful!
               </div>
               <a
                 href={getExplorerLink(signature!)}
