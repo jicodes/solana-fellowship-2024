@@ -8,7 +8,7 @@ import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 
 import { createQR, encodeURL } from "@solana/pay";
-import { Keypair, PublicKey, Connection, clusterApiUrl } from "@solana/web3.js";
+import { Keypair, PublicKey } from "@solana/web3.js";
 import BigNumber from "bignumber.js";
 
 export default function Checkout() {
@@ -17,40 +17,68 @@ export default function Checkout() {
   const totalAmount = new BigNumber(searchParams.get("amount") || "0");
   const qrRef = useRef<HTMLDivElement>(null);
   const [qrGenerated, setQrGenerated] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState("pending");
 
+  const recipient = new PublicKey(
+    "dw1MtDSqudTcVzDPddQwTAFRsXt8gjw8CqEzoBDTSVM",
+  );
+  const reference = useRef(new Keypair().publicKey);
+  const memo = useRef(`#${Date.now()}`);
 
-  if (qrRef.current && !qrGenerated) {
-    const recipient = new PublicKey("dw1MtDSqudTcVzDPddQwTAFRsXt8gjw8CqEzoBDTSVM"); 
-    const reference = new Keypair().publicKey;
-    const label = "Solana POS Purchase";
-    const message = "Thanks for your purchase!";
-    
-    let memoCounter = 100000;
-    const generateMemo = (): string => {
-      memoCounter += 1;
-      return `#${memoCounter}`;
+  useEffect(() => {
+    if (qrRef.current && !qrGenerated) {
+      const label = "Solana POS Purchase";
+      const message = "Thanks for your purchase!";
+
+      const url = encodeURL({
+        recipient,
+        amount: totalAmount,
+        reference: reference.current,
+        label,
+        message,
+        memo: memo.current,
+      });
+
+      const qr = createQR(url, 320, "white", "black");
+      if (qrRef.current) {
+        qrRef.current.innerHTML = "";
+        qr.append(qrRef.current);
+      }
+      setQrGenerated(true);
+
+      // Polling for payment verification
+      const pollInterval = setInterval(async () => {
+        const verificationResult = await verifyPayment();
+        setPaymentStatus(verificationResult.status);
+        if (verificationResult.status === "success") {
+          clearInterval(pollInterval);
+        } else if (verificationResult.status === "error") {
+          clearInterval(pollInterval);
+        }
+      }, 3000);
+
+      return () => clearInterval(pollInterval);
     }
+  }, []);
 
-    const memo = generateMemo();
-
-    const url = encodeURL({
-      recipient,
-      reference,
-      amount: totalAmount,
-      label,
-      message,
-      memo,
-    });
-
-    const qr = createQR(url, 320, "white","black");
-    if (qrRef.current) {
-      qrRef.current.innerHTML = "";
-      qr.append(qrRef.current);
+  const verifyPayment = async () => {
+    try {
+      const response = await fetch("/api/verify-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          recipient: recipient.toBase58(),
+          amount: totalAmount.toString(),
+          reference: reference.current.toBase58(),
+          memo: memo.current,
+        }),
+      });
+      return await response.json();
+    } catch (error) {
+      console.error("Error verifying payment:", error);
+      return { status: "error", message: "Payment verification failed" };
     }
-    setQrGenerated(true);
-
-    // Set up transaction confirmation polling
-  }
+  };
 
   return (
     <div className="container mx-auto p-4 max-w-md">
@@ -69,19 +97,40 @@ export default function Checkout() {
           </div>
           <div className="text-xl mb-6">SOL</div>
 
-          <div ref={qrRef} className="relative mb-6"></div>
+          {paymentStatus === "pending" && (
+            <>
+              <div ref={qrRef} className="relative mb-6"></div>
+              <p className="text-center mb-1">
+                Scan this code with your Solana Pay wallet
+              </p>
+              <p className="text-center text-sm text-gray-500 mb-6">
+                You&apos;ll be asked to approve the transaction
+              </p>
+            </>
+          )}
 
-          <p className="text-center mb-1">
-            Scan this code with your Solana Pay wallet
-          </p>
-          <p className="text-center text-sm text-gray-500 mb-6">
-            You&apos;ll be asked to approve the transaction
-          </p>
+          {paymentStatus === "success" && (
+            <div className="text-green-500 font-bold text-xl mb-6">
+              Payment Finished!
+            </div>
+          )}
+
+          {paymentStatus === "invalid" && (
+            <div className="text-red-500 font-bold text-xl mb-6">
+              Payment found but is invalid. Please try again.
+            </div>
+          )}
+
+          {paymentStatus === "error" && (
+            <div className="text-red-500 font-bold text-xl mb-6">
+              Error verifying payment. Please try again.
+            </div>
+          )}
 
           <div className="flex items-center text-sm text-gray-500">
             Powered by
             <Image
-              src="/solana-pay-logo.svg"
+              src="solana-pay-logo.svg"
               alt="Solana Pay Logo"
               width={60}
               height={20}
