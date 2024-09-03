@@ -1,14 +1,21 @@
-import React from "react";
+import React, { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
+import { CameraCapturedPicture } from 'expo-camera';
+import * as Location from 'expo-location';
 
 import { Section } from "../Section";
 import { useAuthorization } from "../utils/useAuthorization";
-import { AccountDetailFeature } from "../components/account/account-detail-feature";
-import { SignInFeature } from "../components/sign-in/sign-in-feature";
+import { CameraComponent } from "../components/camera/camera-feature";
+import { NFTMinter } from "../components/nft-minter/nft-minter";
 
 export function HomeScreen() {
   const { selectedAccount } = useAuthorization();
+  const [picture, setPicture] = useState<(CameraCapturedPicture & { location?: Location.LocationObject }) | null>(null);
+
+  const handlePictureCapture = (newPicture: (CameraCapturedPicture & { location?: Location.LocationObject }) | null) => {
+    setPicture(newPicture);
+  };
 
   return (
     <View style={styles.screenContainer}>
@@ -16,25 +23,22 @@ export function HomeScreen() {
         style={{ fontWeight: "bold", marginBottom: 12 }}
         variant="displaySmall"
       >
-        Solana Mobile Expo Template
+        Solana NFT Minter
       </Text>
-      {selectedAccount ? (
-        <AccountDetailFeature />
+      {!selectedAccount ? (
+        <Section
+          title="Connect Wallet to start"
+          description="Take a picture to mint your NFT"
+        />
+      ) : !picture ? (
+        <>
+          <Section title="Camera" />
+          <CameraComponent onPictureCapture={handlePictureCapture} />
+        </>
       ) : (
         <>
-          <Section
-            title="Solana SDKs"
-            description="Configured with Solana SDKs like Mobile Wallet Adapter and web3.js."
-          />
-          <Section
-            title="UI Kit and Navigation"
-            description="Utilizes React Native Paper components and the React Native Navigation library."
-          />
-          <Section
-            title="Get started!"
-            description="Connect or Sign in with Solana (SIWS) to link your wallet account."
-          />
-          <SignInFeature />
+          <Section title="Mint NFT" />
+          <NFTMinter picture={picture} selectedAccount={selectedAccount.publicKey} />
         </>
       )}
     </View>
