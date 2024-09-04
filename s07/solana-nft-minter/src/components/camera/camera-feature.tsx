@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, Text, View, Image } from 'react-native';
 import { Camera, CameraType, CameraCapturedPicture } from 'expo-camera';
 import * as Location from 'expo-location';
+import { Button } from 'react-native-paper';
 
 interface CameraComponentProps {
   onPictureCapture: (picture: CameraCapturedPicture & { location?: Location.LocationObject }) => void;
@@ -37,9 +38,9 @@ export function CameraComponent({ onPictureCapture }: CameraComponentProps) {
     return (
       <View style={styles.container}>
         <Text style={styles.text}>We need your permission to use the camera</Text>
-        <TouchableOpacity style={styles.button} onPress={requestPermission}>
-          <Text style={styles.text}>Grant Permission</Text>
-        </TouchableOpacity>
+        <Button mode="contained" onPress={requestPermission}>
+          Grant Permission
+        </Button>
       </View>
     );
   }
@@ -69,9 +70,9 @@ export function CameraComponent({ onPictureCapture }: CameraComponentProps) {
       <View style={styles.container}>
         <Image source={{ uri: capturedImage.uri }} style={styles.camera} />
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={retakePicture}>
-            <Text style={styles.text}>Retake</Text>
-          </TouchableOpacity>
+          <Button mode="contained" onPress={retakePicture}>
+            Retake
+          </Button>
         </View>
       </View>
     );
@@ -80,13 +81,15 @@ export function CameraComponent({ onPictureCapture }: CameraComponentProps) {
   return (
     <View style={styles.container}>
       <Camera style={styles.camera} type={type} ref={cameraRef}>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={toggleCameraType}>
-            <Text style={styles.text}>Flip Camera</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={takePicture}>
-            <Text style={styles.text}>Take Photo</Text>
-          </TouchableOpacity>
+        <View style={styles.buttonOuterContainer}>
+          <View style={styles.buttonContainer}>
+            <Button mode="contained" onPress={toggleCameraType}>
+              Flip Camera
+            </Button>
+            <Button mode="contained" onPress={takePicture}>
+              Take Photo
+            </Button>   
+          </View>
         </View>
       </Camera>
     </View>
@@ -98,27 +101,21 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
+  text: {
+    textAlign: 'center',
+  },
   camera: {
     flex: 1,
   },
+  buttonOuterContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
   buttonContainer: {
-    flex: 1,
     flexDirection: 'row',
-    backgroundColor: 'transparent',
-    margin: 64,
-  },
-  button: {
-    flex: 1,
-    alignSelf: 'flex-end',
+    justifyContent: 'space-around',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    padding: 10,
-    margin: 5,
-    borderRadius: 5,
-  },
-  text: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: 'white',
+    marginBottom: 20,
+    paddingHorizontal: 20,
   },
 });
