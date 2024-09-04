@@ -83,8 +83,8 @@ export function useMobileWallet() {
       disconnect,
       signAndSendTransaction,
       signMessage,
-      signAllTransactions, // Add this new method to the returned object
+      signAllTransactions,
     }),
-    [connect, signIn, disconnect, signAndSendTransaction, signMessage, signAllTransactions]
+    [signAndSendTransaction, signMessage, signAllTransactions]
   );
 }
