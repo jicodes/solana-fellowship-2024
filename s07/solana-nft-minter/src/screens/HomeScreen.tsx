@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
-import { CameraCapturedPicture } from 'expo-camera';
-import * as Location from 'expo-location';
+import { CameraCapturedPicture } from "expo-camera";
+import * as Location from "expo-location";
 
 import { Section } from "../Section";
 import { useAuthorization } from "../utils/useAuthorization";
@@ -11,9 +11,15 @@ import { NFTMinter } from "../components/nft-minter/nft-minter";
 
 export function HomeScreen() {
   const { selectedAccount } = useAuthorization();
-  const [picture, setPicture] = useState<(CameraCapturedPicture & { location?: Location.LocationObject }) | null>(null);
+  const [picture, setPicture] = useState<
+    (CameraCapturedPicture & { location?: Location.LocationObject }) | null
+  >(null);
 
-  const handlePictureCapture = (newPicture: (CameraCapturedPicture & { location?: Location.LocationObject }) | null) => {
+  const handlePictureCapture = (
+    newPicture:
+      | (CameraCapturedPicture & { location?: Location.LocationObject })
+      | null,
+  ) => {
     setPicture(newPicture);
   };
 
@@ -37,8 +43,11 @@ export function HomeScreen() {
         </>
       ) : (
         <>
-          <Section title="Mint NFT" />
-          <NFTMinter picture={picture} selectedAccount={selectedAccount.publicKey} />
+          <Section title="NFT Minter" />
+          <NFTMinter
+            picture={picture}
+            selectedAccount={selectedAccount.publicKey}
+          />
         </>
       )}
     </View>
