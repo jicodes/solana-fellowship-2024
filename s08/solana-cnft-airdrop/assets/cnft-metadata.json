@@ -1,0 +1,17 @@
+{
+  "name": "My cNFT",
+  "symbol": "cNFT",
+  "description": "Profile picture NFT from the My cNFT collection",
+  "image": "https://raw.githubusercontent.com/jicodes/solana-fellowship-2024/main/s08/solana-cnft-airdrop/assets/pfp.jpg",
+  "external_url": "https://example.com.com/nfts",
+  "attributes": [
+    {
+      "trait_type": "Social_media",
+      "value": "https://x.com/home"
+    }
+  ],
+  "collection": {
+    "name": "My cNFT collection",
+    "family": "cNFT"
+  }
+}
