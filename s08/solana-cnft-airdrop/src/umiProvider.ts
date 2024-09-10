@@ -4,6 +4,9 @@ import {
   signerIdentity,
 } from "@metaplex-foundation/umi";
 
+import { mplBubblegum } from "@metaplex-foundation/mpl-bubblegum";
+import { mplTokenMetadata } from "@metaplex-foundation/mpl-token-metadata";
+
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -12,7 +15,9 @@ if (!sk) {
   throw new Error("No secret key provided");
 }
 
-export const umi = createUmi("https://api.devnet.solana.com");
+export const umi = createUmi("https://api.devnet.solana.com")
+  .use(mplBubblegum())
+  .use(mplTokenMetadata());
 
 // Create a Keypair from the secret key.
 let keypair = umi.eddsa.createKeypairFromSecretKey(
