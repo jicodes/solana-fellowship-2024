@@ -3,3 +3,5 @@ test-ledger/
 **/.env
 
 **/node_modules/
+
+**/assets/
