@@ -3,7 +3,7 @@ import {
   createSignerFromKeypair,
   signerIdentity,
 } from "@metaplex-foundation/umi";
-
+import { clusterApiUrl } from "@solana/web3.js";
 import { mplBubblegum } from "@metaplex-foundation/mpl-bubblegum";
 import { mplTokenMetadata } from "@metaplex-foundation/mpl-token-metadata";
 
@@ -15,7 +15,7 @@ if (!sk) {
   throw new Error("No secret key provided");
 }
 
-export const umi = createUmi("https://api.devnet.solana.com")
+export const umi = createUmi(clusterApiUrl("devnet"))
   .use(mplBubblegum())
   .use(mplTokenMetadata());
 
