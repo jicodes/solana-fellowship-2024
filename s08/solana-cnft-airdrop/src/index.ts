@@ -6,17 +6,20 @@ import {
 import { publicKey } from "@metaplex-foundation/umi";
 
 // wallet list to Airdrop cNFTs
-const walletAddresses = [
-  "wallet1",
-  "wallet2",
-  "wallet3", 
-].map((address) => publicKey(address));
+const walletAddresses = ["wallet1", "wallet2", "wallet3"].map((address) =>
+  publicKey(address),
+);
 
 async function main() {
   const collectionMint = await createNftCollection();
   const merkleTree = await createBubblegumTree();
 
-  await mintCnfts(walletAddresses, merkleTree, collectionMint);
+  const mintResults = await mintCnfts(
+    walletAddresses,
+    merkleTree,
+    collectionMint,
+  );
+  console.log("Minting results:", mintResults);
 }
 
 main().catch(console.error);

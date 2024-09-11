@@ -72,16 +72,15 @@ function mintCnft(
   });
 }
 
-// mint multiple cNFTs to the collection
+// mint multiple cNFTs to the collection in parallel
 export async function mintCnfts(
   leafOwners: PublicKey[],
   merkleTree: PublicKey,
   collectionMint: PublicKey,
 ) {
-  console.log(`Minting ${leafOwners.length} cNFTs...`);
+  console.log(`Minting ${leafOwners.length} cNFTs in parallel...`);
 
-  for (let i = 0; i < leafOwners.length; i++) {
-    const recipient = leafOwners[i];
+  const mintPromises = leafOwners.map(async (recipient) => {
     const tx = mintCnft(recipient, merkleTree, collectionMint);
 
     console.log(`Minting cNFT for ${recipient}...`);
@@ -92,7 +91,15 @@ export async function mintCnfts(
       signature,
     );
     console.log(`Asset ID for ${recipient}: ${leaf.id}`);
-  }
+    return { recipient, assetId: leaf.id };
+  });
 
-  console.log(`${leafOwners.length} cNFTs minted successfully`);
+  try {
+    const results = await Promise.all(mintPromises);
+    console.log(`${results.length} cNFTs minted successfully`);
+    return results;
+  } catch (error) {
+    console.error("Error minting cNFTs:", error);
+    throw error;
+  }
 }
