@@ -4,14 +4,23 @@
   "description": "Profile picture NFT from the My cNFT collection",
   "image": "https://raw.githubusercontent.com/jicodes/solana-fellowship-2024/main/s08/solana-cnft-airdrop/assets/pfp.jpg",
   "external_url": "https://example.com.com/nfts",
+  "collection": {
+    "name": "My cNFT collection",
+    "family": "cNFT"
+  },
   "attributes": [
     {
       "trait_type": "Social_media",
       "value": "https://x.com/home"
     }
   ],
-  "collection": {
-    "name": "My cNFT collection",
-    "family": "cNFT"
+  "properties": {
+    "files": [
+      {
+        "uri": "https://raw.githubusercontent.com/jicodes/solana-fellowship-2024/main/s08/solana-cnft-airdrop/assets/pfp.jpg",
+        "type": "image/jpg"
+      }
+    ],
+    "category": "image"
   }
 }
