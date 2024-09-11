@@ -72,7 +72,7 @@ function mintCnft(
   });
 }
 
-// mint multiple cNFTs in parallel
+// mint multiple cNFTs to the collection
 export async function mintCnfts(
   leafOwners: PublicKey[],
   merkleTree: PublicKey,
