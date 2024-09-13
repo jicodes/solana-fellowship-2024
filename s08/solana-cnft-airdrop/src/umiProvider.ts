@@ -3,19 +3,23 @@ import {
   createSignerFromKeypair,
   signerIdentity,
 } from "@metaplex-foundation/umi";
-import { clusterApiUrl } from "@solana/web3.js";
 import { mplBubblegum } from "@metaplex-foundation/mpl-bubblegum";
 import { mplTokenMetadata } from "@metaplex-foundation/mpl-token-metadata";
 
 import dotenv from "dotenv";
 dotenv.config();
 
+const RPC_URL = process.env.RPC_URL;
+if (!RPC_URL) {
+  throw new Error("No RPC URL provided");
+}
+
 const sk = process.env.SECRET_KEY;
 if (!sk) {
   throw new Error("No secret key provided");
 }
 
-export const umi = createUmi(clusterApiUrl("devnet"))
+export const umi = createUmi(RPC_URL)
   .use(mplBubblegum())
   .use(mplTokenMetadata());
 
