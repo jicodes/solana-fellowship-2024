@@ -7,7 +7,6 @@ import {
   fetchMerkleTree,
   mintToCollectionV1,
   parseLeafFromMintToCollectionV1Transaction,
-  LeafSchema,
 } from "@metaplex-foundation/mpl-bubblegum";
 
 import { PublicKey, TransactionBuilder } from "@metaplex-foundation/umi";
@@ -19,9 +18,9 @@ export async function createNftCollection(): Promise<PublicKey> {
   console.log("Creating collection...");
   await createNft(umi, {
     mint: collectionMint,
-    name: "My cNFT Collection",
-    symbol: "cNFT",
-    uri: "https://lime-wily-harrier-571.mypinata.cloud/ipfs/QmZGmZhPxqTwPyP83aR97zLFUfzheBtYfEjxvH5JWarCBb",
+    name: "Solana Fellow cNFT collection",
+    symbol: "FELLOW",
+    uri: "https://lime-wily-harrier-571.mypinata.cloud/ipfs/QmeQYaSLfKrN1JNp3ANNovsDcYZYrxAoqFSweQUMds9hLj",
     sellerFeeBasisPoints: percentAmount(0),
     isCollection: true,
   }).sendAndConfirm(umi);
@@ -60,9 +59,9 @@ function mintCnft(
     merkleTree,
     collectionMint,
     metadata: {
-      name: "My cNFT",
-      symbol: "cNFT",
-      uri: "https://lime-wily-harrier-571.mypinata.cloud/ipfs/QmSvX5fPFJsCmHJGxeWGRggiajoUMASe81cXHtd6Lq9khH",
+      name: "Solana Fellow cNFT",
+      symbol: "FELLOW",
+      uri: "https://lime-wily-harrier-571.mypinata.cloud/ipfs/QmRdXXainRqRJQtDn5ZDFDXY3yeU14TKq5hV5A83J12yHb",
       sellerFeeBasisPoints: 0,
       collection: { key: collectionMint, verified: false },
       creators: [
