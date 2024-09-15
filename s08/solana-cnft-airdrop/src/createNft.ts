@@ -36,8 +36,8 @@ export async function createBubblegumTree(): Promise<PublicKey> {
   console.log("Creating merkle tree...");
   const builder = await createTree(umi, {
     merkleTree,
-    maxDepth: 7,
-    maxBufferSize: 16,
+    maxDepth: 14,
+    maxBufferSize: 64,
   });
   await builder.sendAndConfirm(umi);
 
