@@ -5,6 +5,7 @@ import { createNft } from "@metaplex-foundation/mpl-token-metadata";
 import {
   createTree,
   fetchMerkleTree,
+  LeafSchema,
   mintToCollectionV1,
   parseLeafFromMintToCollectionV1Transaction,
 } from "@metaplex-foundation/mpl-bubblegum";
@@ -72,6 +73,9 @@ function mintCnft(
 }
 
 // mint multiple cNFTs to the collection in parallel
+
+// update: rate limit of helius network is 10 tx/s for free tier,
+// parallel minting is not recommended
 export async function mintCnfts(
   leafOwners: PublicKey[],
   merkleTree: PublicKey,
@@ -101,4 +105,31 @@ export async function mintCnfts(
     console.error("Error minting cNFTs:", error);
     throw error;
   }
+}
+
+// mint multiple cNFTs in sequence
+export async function mintCnftsSequentially(
+  leafOwners: PublicKey[],
+  merkleTree: PublicKey,
+  collectionMint: PublicKey,
+) {
+  console.log(`Minting ${leafOwners.length} cNFTs sequentially...`);
+
+  const results: { recipient: PublicKey; assetId: PublicKey }[] = [];
+  for (const recipient of leafOwners) {
+    const tx = mintCnft(recipient, merkleTree, collectionMint);
+
+    console.log(`Minting cNFT for ${recipient}...`);
+    const { signature } = await tx.sendAndConfirm(umi);
+
+    const leaf: LeafSchema = await parseLeafFromMintToCollectionV1Transaction(
+      umi,
+      signature,
+    );
+    console.log(`Asset ID for ${recipient}: ${leaf.id}`);
+    results.push({ recipient, assetId: leaf.id });
+  }
+
+  console.log(`${results.length} cNFTs minted successfully`);
+  return results;
 }
